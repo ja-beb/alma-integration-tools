@@ -1,12 +1,11 @@
-﻿using AlmaIntegrationTools.AccountSync.Config;
-using AlmaIntegrationTools.AccountSync.Models;
+﻿using AlmaIntegrationTools.AccountSync.Models;
 using AlmaIntegrationTools.AccountSync.Reader;
 using System;
-using System.Configuration;
 using System.IO;
 using System.IO.Compression;
 using System.Xml.Serialization;
 using WinSCP;
+using AlmaIntegrationTools.Config;
 
 namespace AlmaIntegrationTools.AccountSync
 {
@@ -25,7 +24,7 @@ namespace AlmaIntegrationTools.AccountSync
             try
             {
                 // Load config
-                ServersSectionGroup serviceConfigSection = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).SectionGroups["sync"] as ServersSectionGroup;
+                AlmaIntegrationTools.AccountSync.Config.ServersSectionGroup serviceConfigSection = AlmaIntegrationTools.AccountSync.Config.ServersSectionGroup.Instance();
 
                 // create folder structures:
                 DirectoryInfo baseDirectory = new(serviceConfigSection.Path.Value);
@@ -42,7 +41,7 @@ namespace AlmaIntegrationTools.AccountSync
                 });
 
                 // download files from server
-                FileInfo[] files = DownloadFiles(serviceConfigSection.ImportServer.Path, uploadDirectory, new()
+                FileInfo[] files = DownloadFiles(serviceConfigSection.ImportServer.Path, uploadDirectory, new SessionOptions()
                 {
                     Protocol = Protocol.Sftp,
                     HostName = serviceConfigSection.ImportServer.Host,

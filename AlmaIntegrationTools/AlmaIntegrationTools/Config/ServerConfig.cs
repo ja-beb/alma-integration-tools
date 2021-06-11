@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace AlmaIntegrationTools.AccountSync.Config
+namespace AlmaIntegrationTools.Config
 {
     public class ServerConfig : ConfigurationSection
     {
