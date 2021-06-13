@@ -10,6 +10,6 @@ namespace AlmaIntegrationTools.AccountSync.Config
             get => base.Sections["reader"] as ReaderConfig;
         }
 
-        static public ServersSectionGroup Instance() => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).SectionGroups["sync"] as ServersSectionGroup;
+        new static public ServersSectionGroup Instance() => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).SectionGroups["sync"] as ServersSectionGroup;
     }
 }

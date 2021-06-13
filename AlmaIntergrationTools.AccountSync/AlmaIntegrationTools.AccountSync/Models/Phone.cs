@@ -5,9 +5,7 @@ using System.Xml.Serialization;
 
 namespace AlmaIntegrationTools.AccountSync.Models
 {
-
     [Serializable]
-
     [XmlType(AnonymousType = true)]
     public class Phone : BaseInfo
     {

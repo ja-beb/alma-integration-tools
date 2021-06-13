@@ -1,11 +1,12 @@
-﻿using AlmaIntegrationTools.AccountSync.Models;
+﻿using AlmaIntegrationTools.AccountSync.Config;
+using AlmaIntegrationTools.AccountSync.Models;
 using AlmaIntegrationTools.AccountSync.Reader;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using WinSCP;
-using AlmaIntegrationTools.Config;
 
 namespace AlmaIntegrationTools.AccountSync
 {
@@ -23,155 +24,184 @@ namespace AlmaIntegrationTools.AccountSync
         {
             try
             {
-                // Load config
-                AlmaIntegrationTools.AccountSync.Config.ServersSectionGroup serviceConfigSection = AlmaIntegrationTools.AccountSync.Config.ServersSectionGroup.Instance();
-
-                // create folder structures:
-                DirectoryInfo baseDirectory = new(serviceConfigSection.Path.Value);
-                if (!baseDirectory.Exists) baseDirectory.Create();
-
-                DirectoryInfo workingDirectory = CreateDirectory(new string[]{
-                    baseDirectory.FullName,
-                    DateTime.Now.ToString("yyyyddMMHHmmss")
+                // init.
+                Config.ServersSectionGroup serversSectionGroup = Config.ServersSectionGroup.Instance();
+                DirectoryInfo baseDirectory = CreateDirectory(new string[] { 
+                    serversSectionGroup.Path.Value, 
+                    Guid.NewGuid().ToString("N") 
                 });
 
-                DirectoryInfo uploadDirectory = CreateDirectory(new string[] {
-                    workingDirectory.FullName,
-                    "temp"
-                });
-
-                // download files from server
-                FileInfo[] files = DownloadFiles(serviceConfigSection.ImportServer.Path, uploadDirectory, new SessionOptions()
-                {
-                    Protocol = Protocol.Sftp,
-                    HostName = serviceConfigSection.ImportServer.Host,
-                    PortNumber = serviceConfigSection.ImportServer.Port,
-                    UserName = serviceConfigSection.ImportServer.User,
-                    SshHostKeyFingerprint = serviceConfigSection.ImportServer.Fingerprint,
-                    SshPrivateKeyPath = serviceConfigSection.ImportServer.Key,
-                });
-
-                // Parse import file.
-                foreach (FileInfo fileInfo in files)
-                {
-                    using IPatronReader<User> reader = new PatronFileReader(new StreamReader(fileInfo.FullName))
+                // import.
+                FileInfo[] files = Fetch(new SessionOptions()
                     {
-                        CountryCodes = CountryCodes.Fetch(),
-                        CampusCode = serviceConfigSection.Reader.Campus,
-                        SchoolEmailFormat = string.Format("@{0}", serviceConfigSection.Reader.Domain),
-                    };
-                    ParseFile(reader, new(Path.Combine(workingDirectory.FullName, String.Format("{0}.xml", 0 == fileInfo.Extension.Length ? fileInfo.Name : fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length)))));
-                }
+                        Protocol = Protocol.Sftp,
+                        HostName = serversSectionGroup.ImportServer.Host,
+                        PortNumber = serversSectionGroup.ImportServer.Port,
+                        UserName = serversSectionGroup.ImportServer.User,
+                        SshHostKeyFingerprint = serversSectionGroup.ImportServer.Fingerprint,
+                        SshPrivateKeyPath = serversSectionGroup.ImportServer.Key,
+                    },
+                    serversSectionGroup.ImportServer.Path, 
+                    CreateDirectory(new string[] { baseDirectory.FullName, "import" })
+                 );
 
-                // remove upload folder
-                uploadDirectory.Delete(true);
-
-                // zip and send parsed files
-                FileInfo zipFile = CompressOutput(workingDirectory);
-                Send(zipFile, String.Format("{0}/{1}", serviceConfigSection.ExportServer.Path, zipFile.Name), new()
-                {
-                    Protocol = Protocol.Sftp,
-                    HostName = serviceConfigSection.ExportServer.Host,
-                    PortNumber = serviceConfigSection.ExportServer.Port,
-                    UserName = serviceConfigSection.ExportServer.User,
-                    SshHostKeyFingerprint = serviceConfigSection.ExportServer.Fingerprint,
-                    SshPrivateKeyPath = serviceConfigSection.ExportServer.Key,
+                // convert.
+                DirectoryInfo exportDirectory = CreateDirectory(new string[] { 
+                    baseDirectory.FullName, 
+                    DateTime.Now.ToString("yyyyMMddhhmmss") 
                 });
+                ConvertToXml(files, exportDirectory, serversSectionGroup.Reader);
+                
+                // send.
+                FileInfo exportFile = Compress(exportDirectory);
+                Send(new SessionOptions()
+                    {
+                        Protocol = Protocol.Sftp,
+                        HostName = serversSectionGroup.ExportServer.Host,
+                        PortNumber = serversSectionGroup.ExportServer.Port,
+                        UserName = serversSectionGroup.ExportServer.User,
+                        SshHostKeyFingerprint = serversSectionGroup.ExportServer.Fingerprint,
+                        SshPrivateKeyPath = serversSectionGroup.ExportServer.Key,
+                    },
+                    exportFile,
+                    serversSectionGroup.ExportServer.Path
+                );
 
-                // remove working folders and zip
-                workingDirectory.Delete(true);
-                zipFile.Delete();
+                // cleanup.
+                baseDirectory.Delete(true);
             }
 
             catch (ArgumentException exception)
             {
-                Console.Error.WriteLine(exception.Message);
+                LogError(exception);
             }
 
             catch (IOException exception)
             {
-                Console.Error.WriteLine(exception.Message);
+                LogError(exception);
             }
 
             catch (FormatException)
             {
-                Console.Error.WriteLine("Invalid configuration setting: update the application config file.");
+                LogError("Invalid configuration setting: update the application config file.");
             }
         }
 
         /// <summary>
-        /// Parse file.
+        /// Log program error.
         /// </summary>
-        /// <param name="file"></param>
-        static void ParseFile(IPatronReader<User> reader, FileInfo exportFile)
-        {
-            UserCollection collection = new();
-            reader.Open();
-            for (User user = reader.ReadNext(); null != user; user = reader.ReadNext()) collection.Add(user);
-            reader.Close();
-
-            //Create the serializer
-            FileStream stream = exportFile.OpenWrite();
-            XmlSerializer serializer = new(typeof(UserCollection));
-            XmlSerializerNamespaces myNamespaces = new();
-            myNamespaces.Add("", "");
-            serializer.Serialize(stream, collection, myNamespaces);
-            stream.Close();
-        }
+        /// <param name="exception"></param>
+        static void LogError(Exception exception) => LogError(exception.Message);
 
         /// <summary>
-        /// Create compressed version of file.
+        /// Log program error.
         /// </summary>
-        static FileInfo CompressOutput(DirectoryInfo path)
-        {
-            FileInfo file = new(String.Format("{0}.zip", path.FullName));
-            ZipFile.CreateFromDirectory(path.FullName, file.FullName);
-            return file;
-        }
+        /// <param name="message"></param>
+        static void LogError(string message) => Console.Error.WriteLine(message);
 
         /// <summary>
-        /// Send file to serve using the SSH.Net API.
+        /// Fetch files from remote server.
         /// </summary>
-        /// <param name="file"></param>
-        static void Send(FileInfo file, string remoteFile, SessionOptions sessionOptions)
+        /// <param name="sessionOptions"></param>
+        /// <param name="remotePath"></param>
+        /// <param name="directoryInfo"></param>
+        /// <returns></returns>
+        static public FileInfo[] Fetch(SessionOptions sessionOptions, string remotePath, DirectoryInfo directoryInfo)
         {
-            using Session session = new();
+            using Session importSession = new();
             {
-                session.Open(sessionOptions);
-                session.PutFiles(file.FullName, remoteFile, true);
-                session.Close();
+                importSession.Open(sessionOptions);
+                importSession.GetFiles(remotePath, directoryInfo.FullName, false);
+                importSession.Close();
+            }
+            return directoryInfo.GetFiles("*.sif");
+        }
+
+        /// <summary>
+        /// Convert files from SIF to XML format.
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="directoryInfo"></param>
+        /// <param name="config"></param>
+        static public void ConvertToXml(FileInfo[] files, DirectoryInfo directoryInfo, ReaderConfig config)
+        {
+            foreach (FileInfo fileInfo in files)
+            {
+                UserCollection collection = new();
+                using IPatronReader<User> reader = new PatronFileReader(new StreamReader(fileInfo.FullName), str => Regex.Replace(str, @"[\u0001]", Regex.Replace(str, @"[^\u0020-\u007E]", " ")))
+                {
+                    CountryCodes = CountryCodes.Fetch(),
+                    CampusCode = config.Campus,
+                    EmailFormat = string.Format("@{0}", config.Domain),
+                };
+                {
+                    reader.Open();
+                    for (User user = reader.ReadNext(); null != user; user = reader.ReadNext())
+                    {
+                        collection.Add(user);
+                    }
+                    reader.Close();
+                }
+
+                // Serialize output.
+                string filename = String.Format("{0}.xml", 0 == fileInfo.Extension.Length ? fileInfo.Name : fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
+                using FileStream stream = new FileInfo(Path.Combine(directoryInfo.FullName, filename)).OpenWrite();
+                {
+                    XmlSerializer serializer = new(collection.GetType());
+                    XmlSerializerNamespaces myNamespaces = new();
+                    myNamespaces.Add("", "");
+                    serializer.Serialize(stream, collection, myNamespaces);
+                }
             }
         }
 
         /// <summary>
-        /// Create directory for processing files.
+        /// Compress directory to send.
+        /// </summary>
+        /// <param name="directoryInfo"></param>
+        /// <returns></returns>
+        static public FileInfo Compress(DirectoryInfo directoryInfo)
+        {
+            FileInfo zipFile = new(String.Format("{0}.zip", directoryInfo.FullName));
+            ZipFile.CreateFromDirectory(directoryInfo.FullName, zipFile.FullName);
+            return zipFile;
+        }
+
+        /// <summary>
+        /// Send files to export server.
+        /// </summary>
+        /// <param name="sessionOptions"></param>
+        /// <param name="fileInfo"></param>
+        /// <param name="remotePath"></param>
+        static public void Send(SessionOptions sessionOptions, FileInfo fileInfo, string remotePath)
+        {
+            // Send to export server and remove zip file.
+            using Session exportSession = new();
+            {
+                exportSession.Open(sessionOptions);
+                exportSession.PutFiles(fileInfo.FullName, String.Format("{0}/{1}", remotePath, fileInfo.Name), true);
+                exportSession.Close();
+            }
+        }
+
+        /// <summary>
+        /// Create directory
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        static DirectoryInfo CreateDirectory(string[] path)
+        static DirectoryInfo CreateDirectory(string[] path) => CreateDirectory(Path.Combine(path));
+
+        /// <summary>
+        /// Create directory.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        static DirectoryInfo CreateDirectory(string path)
         {
-            DirectoryInfo directoryInfo = new(Path.Combine(path));
-            if (directoryInfo.Exists) directoryInfo.Delete();
+            DirectoryInfo directoryInfo = new(path);
             directoryInfo.Create();
             return directoryInfo;
         }
 
-        /// <summary>
-        /// Download files from server
-        /// </summary>
-        /// <param name="remotePath"></param>
-        /// <param name="localDirectory"></param>
-        /// <param name="sessionOptions"></param>
-        /// <returns></returns>
-        static FileInfo[] DownloadFiles(string remotePath, DirectoryInfo localDirectory, SessionOptions sessionOptions)
-        {
-            using Session session = new();
-            {
-                session.Open(sessionOptions);
-                session.GetFiles(remotePath, localDirectory.FullName, false);
-                session.Close();
-            }
-            return localDirectory.GetFiles("*.txt");
-        }
     }
 }

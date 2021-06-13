@@ -13,9 +13,20 @@ namespace AlmaIntegrationTools.AccountSync.Reader
     /// </summary>
     public class PatronFileReader : IPatronReader<User>, IDisposable
     {
-        public string SchoolEmailFormat { get; set; }
+        /// <summary>
+        /// Email format.
+        /// </summary>
+        public string EmailFormat { get; set; }
 
+        /// <summary>
+        /// Campus code.
+        /// </summary>
         public string CampusCode { get; set; }
+
+        /// <summary>
+        /// Clean input function - default to none. Required if input file isn't properly encoded.
+        /// </summary>
+        public Func<string, string> Clean { get; set; }
 
         /// <summary>
         /// Previous read buffered line.
@@ -30,16 +41,25 @@ namespace AlmaIntegrationTools.AccountSync.Reader
         /// <summary>
         /// Country codes used to translate ISO codes.
         /// </summary>
-        public Dictionary<string, string> CountryCodes;
+        public Dictionary<string, string> CountryCodes { get; set; }
 
         /// <summary>
         /// Construct instance of UserFileReader.
         /// </summary>
         /// <param name="recordType"></param>
         /// <param name="streamReader"></param>
-        public PatronFileReader(StreamReader streamReader)
+        public PatronFileReader(StreamReader streamReader) : this(streamReader, str => str)
+        { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="streamReader"></param>
+        /// <param name="cleanInput"></param>
+        public PatronFileReader(StreamReader streamReader, Func<string,string> cleanInput)
         {
             StreamReader = streamReader;
+            Clean = cleanInput;
         }
 
         /// <summary>
@@ -54,7 +74,7 @@ namespace AlmaIntegrationTools.AccountSync.Reader
                 sb.Append(' ');
                 sb.Append(BufferLine);
             }
-            string result = 0 == sb.Length ? "" : Regex.Replace(sb.ToString(), @"[^\u0020-\u007F]", String.Empty);
+            string result = Clean(sb.ToString());
             return String.IsNullOrEmpty(result) ? null : Create(result);
         }
 
@@ -79,7 +99,6 @@ namespace AlmaIntegrationTools.AccountSync.Reader
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
 
         /// <summary>
         /// Create user record from input strung.
@@ -142,7 +161,7 @@ namespace AlmaIntegrationTools.AccountSync.Reader
                         {
                             case 1:
                             case 2:
-                                user.ContactInfo.Addresses.Add(new Address(GetSubstring(line, 32, 40).Trim(), GetSubstring(line, 242, 40).Trim(), new String[] { "home" })
+                                user.ContactInfo.Addresses.Add(new (GetSubstring(line, 32, 50).Trim(), GetSubstring(line, 242, 40).Trim(), new String[] { "home" })
                                 {
                                     SegmentType = "External",
                                     IsPreferred = 1 == addressType,
@@ -223,7 +242,7 @@ namespace AlmaIntegrationTools.AccountSync.Reader
 
                                 if (!String.IsNullOrEmpty(email))
                                 {
-                                    isSchoolEmail = !String.IsNullOrEmpty(SchoolEmailFormat) && email.EndsWith(SchoolEmailFormat);
+                                    isSchoolEmail = !String.IsNullOrEmpty(EmailFormat) && email.EndsWith(EmailFormat);
                                     string[] contactTypes = Array.Empty<string>();
                                     if (!isSchoolEmail)
                                     {
@@ -265,11 +284,7 @@ namespace AlmaIntegrationTools.AccountSync.Reader
         /// <param name="date"></param>
         /// <param name="defaultDate"></param>
         /// <returns></returns>
-        static DateTime ParseDateTime(string date, DateTime defaultDate)
-        {
-            if (!DateTime.TryParse(date, out DateTime pDate)) return defaultDate;
-            return pDate;
-        }
+        static DateTime ParseDateTime(string date, DateTime defaultDate) => DateTime.TryParse(date, out DateTime pDate) ? pDate : defaultDate;
 
         /// <summary>
         /// Get substring without going outside of bounds.
