@@ -16,6 +16,8 @@ namespace AlmaIntergrationTools.Bursar
         public ulong Number { get; set; }
 
         [XmlIgnore()]
-        public bool ExportNumberSpecified { get; set; }
+        public bool ExportNumberSpecified {
+            get => ( 0 != Number );
+        }
     }
 }

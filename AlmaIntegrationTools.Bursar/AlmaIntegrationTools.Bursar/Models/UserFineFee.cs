@@ -24,7 +24,7 @@ namespace AlmaIntergrationTools.Bursar
         public string Title { get; set; }
 
         [XmlElement("itemCallNumebr")]
-        public string CallNumebr { get; set; }
+        public string CallNumber { get; set; }
 
         [XmlElement("itemLibrary")]
         public string Library { get; set; }
