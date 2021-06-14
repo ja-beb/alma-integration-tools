@@ -8,7 +8,7 @@ namespace AlmaIntergrationTools.Finance
     {
 
         [XmlAttribute("preferred")]
-        public bool IsPrefered { get; set; }
+        public bool IsPreferred { get; set; }
 
         /// <summary>
         /// 

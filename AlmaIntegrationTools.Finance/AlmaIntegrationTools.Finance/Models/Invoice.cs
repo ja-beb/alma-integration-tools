@@ -4,7 +4,6 @@ using System.Xml.Serialization;
 
 namespace AlmaIntergrationTools.Finance
 {
-
     [Serializable]
     public class Invoice
     {
@@ -31,7 +30,7 @@ namespace AlmaIntergrationTools.Finance
         /// Amount of this invoice.
         /// </summary>
         [XmlElement("invoice_amount")]
-        public Amount InvoiceAmount { get; set; }
+        public Amount Amount { get; set; }
 
         /// <summary>
         /// The code of the vendor from which the invoice was issued. This may be used to identify the invoice (with invoice_number) during import, if a unique_identifier is not supplied. 
@@ -43,7 +42,7 @@ namespace AlmaIntergrationTools.Finance
         /// The name of the vendor from which the invoice was issued. 
         /// </summary>
         [XmlElement("vendor_name")]
-        public String VendorName { get; set; }
+        public String VendorName { get => Vendor.Name; set => Vendor.Name = value; }
 
         /// <summary>
         /// The Financial Sys Code of the vendor from which the invoice was issued. 
@@ -105,7 +104,7 @@ namespace AlmaIntergrationTools.Finance
         /// The number of invoice attachments. The actual attachments can be retrieved using API. 
         /// </summary>
         [XmlElement("number_of_attachments")]
-        public int AttachementCount { get; set; }
+        public int AttachmentCount { get; set; }
 
 
         /// <summary>
@@ -159,7 +158,6 @@ namespace AlmaIntergrationTools.Finance
         /// </summary>
         [XmlElement("additional_charges")]
         public AdditionalCharges AdditionalCharges { get; set; }
-
 
 
         /// <summary>

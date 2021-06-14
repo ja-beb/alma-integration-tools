@@ -2,12 +2,8 @@
 
 namespace AlmaIntergrationTools.Finance
 {
-
-
-
     public class AdditionalCharges
     {
-
         /// <summary>
         /// The total sum of additional charges.
         /// </summary>
