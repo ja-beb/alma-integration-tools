@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Finance
+namespace AlmaIntergrationTools.Finance.Models
 {
-  
+
     /// <summary>
     /// Total amounts for invoice.
     /// </summary>
