@@ -1,14 +1,22 @@
 # Create enviroment for testing export-sis-alma.
 version: "3.7"
 services: 
-    export-sftp:
-        container_name: export-sftp
+    sftp-export:
+        container_name: sftp-export
         build: .
         volumes:
-            - ./sshd_config:/etc/ssh/sshd_config:ro
-            - ./private/ssh:/etc/ssh/keys:ro
-            - ./local/home:/home/sftp:rw
+            - ./sftp-export/sshd_config:/etc/ssh/sshd_config:ro
+            - ./sftp-export/ssh/private:/etc/ssh/keys:ro
+            - ./sftp-export/home:/home/sftp:rw
         ports:
             - "2222:22"
-        # restart: always
-
+    
+    sftp-import:
+        container_name: sftp-import
+        build: .
+        volumes:
+            - ./sftp-import/sshd_config:/etc/ssh/sshd_config:ro
+            - ./sftp-import/ssh/private:/etc/ssh/keys:ro
+            - ./sftp-import/home:/home/sftp:rw
+        ports:
+            - "2221:22"

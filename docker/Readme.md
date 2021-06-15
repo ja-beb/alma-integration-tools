@@ -1,14 +1,28 @@
-# Generate SSH Server Keys 
+# Setup docker containers
 
-To set up the SFTP docker instance first create required folders and host keys.
+## Create folder structure & generate ssh keys
+To create the docker container structures, use the setup script.
 
-```
-$ mkdir ssh
-$ ssh-keygen -t ed25519 -f ssh/ssh_host_ed25519_key < /dev/null
-$ ssh-keygen -t rsa -b 4096 -f ssh/ssh_host_rsa_key < /dev/null
-$ mkdir home/.ssh
-$ touch home/.ssh/authorized_keys
-```
+`user@host $ ./bin/setup.sh ./`
 
-# Create ssh authentication key
-Add public key (ppk) to home/.ssh/authorized_keys file.
+## Load default sshd config:
+The following commands will load the default ssh config settings to both sftp servers. Change as needed.
+
+`user@host $ cat ssh-config-base > sftp-import/sshd_config`
+
+`user@host $ cat ssh-config-base > sftp-export/sshd_config`
+
+## Setup user password
+If you need password access to the docker containers to install SSH identiy keys use from another client the following command:
+
+`user@host $ docker exec -it sftp-export ash`
+
+`user@host $ docker exec -it sftp-import ash`
+
+Once in shell you can use the passwd command to update the sftp user's password.
+
+`/ # passwd sftp`
+
+## Start containers:
+
+`user@host $ docker-compose build && docker-compose up -d`
