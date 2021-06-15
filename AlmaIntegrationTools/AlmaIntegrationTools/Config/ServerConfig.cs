@@ -2,8 +2,14 @@
 
 namespace AlmaIntegrationTools.Config
 {
+    /// <summary>
+    /// SFTP Server configuration object.
+    /// </summary>
     public class ServerConfig : ConfigurationSection
     {
+        /// <summary>
+        /// Server host.
+        /// </summary>
         [ConfigurationProperty("host", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Host
         {
@@ -11,6 +17,9 @@ namespace AlmaIntegrationTools.Config
             set => this["host"] = value;
         }
 
+        /// <summary>
+        /// Server port (defaults to 22).
+        /// </summary>
         [ConfigurationProperty("port", DefaultValue = 22, IsKey = true, IsRequired = true)]
         public int Port
         {
@@ -18,6 +27,9 @@ namespace AlmaIntegrationTools.Config
             set => this["host"] = value;
         }
 
+        /// <summary>
+        /// Username.
+        /// </summary>
         [ConfigurationProperty("user", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string User
         {
@@ -25,6 +37,9 @@ namespace AlmaIntegrationTools.Config
             set => this["user"] = value;
         }
 
+        /// <summary>
+        /// Path to server folder.
+        /// </summary>
         [ConfigurationProperty("path", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Path
         {
@@ -32,6 +47,9 @@ namespace AlmaIntegrationTools.Config
             set => this["path"] = value;
         }
 
+        /// <summary>
+        /// User's private key to access server.
+        /// </summary>
         [ConfigurationProperty("key", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Key
         {
@@ -39,7 +57,10 @@ namespace AlmaIntegrationTools.Config
             set => this["key"] = value;
         }
 
-        [ConfigurationProperty("fingerprint", DefaultValue = "", IsKey = true, IsRequired = true)]
+        /// <summary>
+        /// Server's fingerprint.
+        /// </summary>
+        [ConfigurationProperty("fingerprint", DefaultValue = "", IsKey = true, IsRequired = false)]
         public string Fingerprint
         {
             get => this["fingerprint"]?.ToString();

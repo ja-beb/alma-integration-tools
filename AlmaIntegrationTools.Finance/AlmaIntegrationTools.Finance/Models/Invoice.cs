@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Finance
+namespace AlmaIntergrationTools.Finance.Models
 {
     [Serializable]
     public class Invoice
@@ -42,7 +42,7 @@ namespace AlmaIntergrationTools.Finance
         /// The name of the vendor from which the invoice was issued. 
         /// </summary>
         [XmlElement("vendor_name")]
-        public String VendorName { get => Vendor.Name; set => Vendor.Name = value; }
+        public String VendorName { get; set; }
 
         /// <summary>
         /// The Financial Sys Code of the vendor from which the invoice was issued. 

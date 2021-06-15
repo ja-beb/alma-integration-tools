@@ -4,6 +4,9 @@ namespace AlmaIntegrationTools.Config
 {
     public class PathConfig : ConfigurationSection
     {
+        /// <summary>
+        /// Path value.
+        /// </summary>
         [ConfigurationProperty("value", DefaultValue = "", IsKey = true, IsRequired = true)]
         public string Value
         {

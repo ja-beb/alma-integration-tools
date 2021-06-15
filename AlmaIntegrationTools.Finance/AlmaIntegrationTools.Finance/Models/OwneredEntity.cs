@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Finance
+namespace AlmaIntergrationTools.Finance.Models
 {
-
 
     public class OwneredEntity
     {
-        /// <summary>
-        /// 
+        /// <summary>y
         /// </summary>
         [XmlElement("createdBy")]
         public String CreatedBy { get; set; }
@@ -20,7 +17,6 @@ namespace AlmaIntergrationTools.Finance
         [XmlElement("creationDate")]
         public String CreationDate { get; set; }
 
-        /// <summary>
         /// <summary>
         /// 
         /// </summary>
