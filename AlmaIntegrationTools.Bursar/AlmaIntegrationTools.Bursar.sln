@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31402.337
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlmaIntegrationTools.Bursar", "AlmaIntegrationTools.Bursar\AlmaIntegrationTools.Bursar.csproj", "{622FA2E5-473F-4F0A-AA12-867A212866A4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlmaIntegrationTools", "..\AlmaIntegrationTools\AlmaIntegrationTools\AlmaIntegrationTools.csproj", "{30E5349A-3E61-4F60-9434-D0347A4AAE5E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{622FA2E5-473F-4F0A-AA12-867A212866A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{622FA2E5-473F-4F0A-AA12-867A212866A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{622FA2E5-473F-4F0A-AA12-867A212866A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{622FA2E5-473F-4F0A-AA12-867A212866A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30E5349A-3E61-4F60-9434-D0347A4AAE5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30E5349A-3E61-4F60-9434-D0347A4AAE5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30E5349A-3E61-4F60-9434-D0347A4AAE5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30E5349A-3E61-4F60-9434-D0347A4AAE5E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F2B5344-9F5D-4B23-9DED-375A07E53280}
+	EndGlobalSection
+EndGlobal

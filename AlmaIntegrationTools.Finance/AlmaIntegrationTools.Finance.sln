@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31402.337
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlmaIntegrationTools.Finance", "AlmaIntegrationTools.Finance\AlmaIntegrationTools.Finance.csproj", "{54E21A54-8BE3-4973-8662-3EA860E00648}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlmaIntegrationTools", "..\AlmaIntegrationTools\AlmaIntegrationTools\AlmaIntegrationTools.csproj", "{FA1247F3-7482-48AD-8713-74431706A55D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54E21A54-8BE3-4973-8662-3EA860E00648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E21A54-8BE3-4973-8662-3EA860E00648}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E21A54-8BE3-4973-8662-3EA860E00648}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E21A54-8BE3-4973-8662-3EA860E00648}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA1247F3-7482-48AD-8713-74431706A55D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA1247F3-7482-48AD-8713-74431706A55D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA1247F3-7482-48AD-8713-74431706A55D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA1247F3-7482-48AD-8713-74431706A55D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14D1457A-1EDC-4BD6-AC9F-378A5F2D675A}
+	EndGlobalSection
+EndGlobal
