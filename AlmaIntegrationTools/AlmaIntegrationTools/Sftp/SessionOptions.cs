@@ -18,16 +18,17 @@
         /// <summary>
         /// User to use for upload.
         /// </summary>
-        public string UserName { get; set; }
+        public string Username { get; set; }
 
         /// <summary>
         /// Servers SSH host key fingerprint.
         /// </summary>
-        public string SshHostKeyFingerprint { get; set; }
+        public string HostKeyFingerprint { get; set; }
 
         /// <summary>
         /// SSH Private key path (does not support putty keys, must be converted to OpenSSL using putty-gen)
         /// </summary>
-        public string SshPrivateKeyPath { get; set; }
+        public string PrivateKeyPath { get; set; }
+
     }
 }

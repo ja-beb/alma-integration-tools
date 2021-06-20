@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Bursar
+namespace AlmaIntegrationTools.Bursar.Models
 {
     [Serializable]
     [XmlType(AnonymousType = true, Namespace = BursarFeed.Namespace)]
     [XmlRoot("xml-fragment", Namespace = BursarFeed.Namespace, IsNullable = false)]
-    public class BursarFeed
+    public class BursarFeed 
     {
         [XmlIgnore]
         public const string Namespace = "http://com/exlibris/urm/rep/externalsysfinesfees/xmlbeans";
@@ -27,6 +27,11 @@ namespace AlmaIntergrationTools.Bursar
 
         [XmlElement("userExportedFineFees")]
         public List<BursarExportData> ExportedFineFees { get; set; }
+
+        public IReadOnlyList<BursarExportData> GetList()
+        {
+            return ExportedFineFees.AsReadOnly();
+        }
     }
 }
 

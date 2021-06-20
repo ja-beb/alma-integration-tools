@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Bursar
+namespace AlmaIntegrationTools.Bursar.Models
 {
     [Serializable]
     [XmlType(AnonymousType = true, Namespace = BursarFeed.Namespace)]
