@@ -1,0 +1,39 @@
+# https://hub.docker.com/_/microsoft-dotnet
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+WORKDIR /source
+
+# copy csproj and restore as distinct layers
+COPY AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance.csproj AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance.csproj
+COPY AlmaIntegrationTools/AlmaIntegrationTools/AlmaIntegrationTools.csproj AlmaIntegrationTools/AlmaIntegrationTools/AlmaIntegrationTools.csproj
+
+# restore projcts
+RUN dotnet restore AlmaIntegrationTools/AlmaIntegrationTools/AlmaIntegrationTools.csproj \
+    && dotnet restore AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance/AlmaIntegrationTools.Finance.csproj
+
+# copy and build app and libraries
+COPY AlmaIntegrationTools.Finance AlmaIntegrationTools.Finance
+COPY AlmaIntegrationTools AlmaIntegrationTools
+
+# restore account fianance
+WORKDIR /source/AlmaIntegrationTools.Finance
+RUN dotnet build -c release --no-restore
+
+# build publish image
+FROM build AS publish
+
+# finance
+WORKDIR /source/AlmaIntegrationTools.Finance
+RUN dotnet publish -c release --no-build -o /app
+
+# final stage/image
+FROM mcr.microsoft.com/dotnet/runtime:5.0
+WORKDIR /app
+COPY --from=publish /app .
+
+# configure environment
+RUN mkdir /var/alma-integration
+
+COPY private/ssh-keys /app/ssh-keys
+
+# default
+CMD ["dotnet", "AlmaIntegrationTools.Finance.dll"]

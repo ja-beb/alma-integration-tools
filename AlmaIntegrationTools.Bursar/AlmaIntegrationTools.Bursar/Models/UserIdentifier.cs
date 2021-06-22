@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace AlmaIntergrationTools.Bursar
+namespace AlmaIntegrationTools.Bursar.Models
 {
 
     [Serializable]

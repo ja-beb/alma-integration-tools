@@ -2,7 +2,9 @@
 using Renci.SshNet.Common;
 using Renci.SshNet.Sftp;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace AlmaIntegrationTools.Sftp
@@ -37,8 +39,8 @@ namespace AlmaIntegrationTools.Sftp
             ConnectionInfo connectionInfo = new(
                 sessionOptions.HostName,
                 sessionOptions.PortNumber,
-                sessionOptions.UserName,
-                new PrivateKeyAuthenticationMethod(sessionOptions.UserName, new PrivateKeyFile[] { new(sessionOptions.SshPrivateKeyPath) })
+                sessionOptions.Username,
+                new PrivateKeyAuthenticationMethod(sessionOptions.Username, new PrivateKeyFile[] { new(sessionOptions.PrivateKeyPath) })
             );
             SftpClient = new(connectionInfo);
         }
@@ -48,9 +50,9 @@ namespace AlmaIntegrationTools.Sftp
         /// </summary>
         public void Open()
         {
-            if (!string.IsNullOrEmpty(SessionOptions.SshHostKeyFingerprint))
+            if (!string.IsNullOrEmpty(SessionOptions.HostKeyFingerprint))
             {
-                SftpClient.HostKeyReceived += (object sender, HostKeyEventArgs e) => e.CanTrust = String.Format("{0} {1} {2}", e.HostKeyName, e.KeyLength, Convert.ToBase64String(new SHA256Managed().ComputeHash(e.HostKey))) == SessionOptions.SshHostKeyFingerprint;
+                SftpClient.HostKeyReceived += (object sender, HostKeyEventArgs e) => e.CanTrust = String.Format("{0} {1} {2}", e.HostKeyName, e.KeyLength, Convert.ToBase64String(new SHA256Managed().ComputeHash(e.HostKey))) == SessionOptions.HostKeyFingerprint;
             }
             SftpClient.Connect();
         }
@@ -69,7 +71,7 @@ namespace AlmaIntegrationTools.Sftp
         /// <param name="remotePath"></param>
         /// <param name="localPath"></param>
         /// <param name="remove"></param>
-        public void GetFiles(string remotePath, string localPath, bool remove) => GetFiles(remotePath, localPath, remove, filename => !filename.StartsWith("."));
+        public FileInfo GetFiles(string remotePath, string localPath, bool remove) => GetFiles(remotePath, localPath, remove, filename => !filename.StartsWith(".")).FirstOrDefault();
 
         /// <summary>
         /// Get remote files.
@@ -78,12 +80,19 @@ namespace AlmaIntegrationTools.Sftp
         /// <param name="localPath"></param>
         /// <param name="remove"></param>
         /// <param name="filter"></param>
-        public void GetFiles(string remotePath, string localPath, bool remove, Func<string,bool> filter)
+        public IReadOnlyList<FileInfo> GetFiles(string remotePath, string localPath, bool remove, Func<string,bool> filter)
         {
+            List<FileInfo> files = new();
             foreach (SftpFile sftpFile in SftpClient.ListDirectory(remotePath))
             {
-                if (filter(sftpFile.Name)) GetFile(String.Format($"{remotePath}/{sftpFile.Name}"), Path.Combine(localPath, sftpFile.Name), remove);
+                if (filter(sftpFile.Name))
+                {
+                    string filename = Path.Combine(localPath, sftpFile.Name);
+                    GetFile($"{remotePath}/{sftpFile.Name}", filename, remove);
+                    files.Add(new FileInfo(filename));
+                }
             }
+            return files.AsReadOnly();
         }
 
         public void GetFile(string remoteFile, string localFile, bool remove)

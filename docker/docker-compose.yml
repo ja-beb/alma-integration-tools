@@ -3,7 +3,9 @@ version: "3.7"
 services: 
     sftp-export:
         container_name: sftp-export
-        build: .
+        build: 
+            context: Dockerfile
+            dockerfile: sftp
         volumes:
             - ./sftp-export/sshd_config:/etc/ssh/sshd_config:ro
             - ./sftp-export/ssh/private:/etc/ssh/keys:ro
@@ -13,7 +15,9 @@ services:
     
     sftp-import:
         container_name: sftp-import
-        build: .
+        build: 
+            context: Dockerfile
+            dockerfile: sftp
         volumes:
             - ./sftp-import/sshd_config:/etc/ssh/sshd_config:ro
             - ./sftp-import/ssh/private:/etc/ssh/keys:ro
